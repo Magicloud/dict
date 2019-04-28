@@ -33,7 +33,7 @@ library:
   - -Wall
 
 executables:
-  dict-exe:
+  dict:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

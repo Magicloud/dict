@@ -1,0 +1,36 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: ubuntu:bionic
+    steps:
+      - checkout
+      - run:
+          name: Prepare
+          command: apt update && apt full-upgrade -y && apt install libcairo2-dev haskell-stack locales -y && stack upgrade && locale-gen en_US.UTF-8
+      - run:
+          name: Build
+          command: LC_ALL=en_US.UTF-8 /root/.local/bin/stack build --fast && /root/.local/bin/stack install
+      - persist_to_workspace:
+          root: /
+          paths:
+            - root/.local/bin/dict
+  release:
+    docker:
+      - image: cibuilds/github
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Release
+          command: ghr -t "${api_token}" -u magicloud -r dict -draft prerelease /tmp/root/.local/bin/dict
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build
+      - release:
+          context: Github
+          requires:
+            - build
